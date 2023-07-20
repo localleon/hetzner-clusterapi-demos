@@ -82,7 +82,7 @@ metadata:
   namespace: default
 spec:
   clusterName: hetzner-capi-rke2-demo
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels: null
   template:
@@ -99,7 +99,18 @@ spec:
         apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
         kind: HCloudMachineTemplate
         name: hetzner-capi-rke2-demo-md-0
-      version: v1.25.2
+      version: v1.24.6
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha1
+kind: RKE2ConfigTemplate
+metadata:
+  name: hetzner-capi-rke2-demo-agent
+  namespace: default
+spec:
+  template:
+    spec:
+      agentConfig:
+        version: v1.24.6+rke2r1
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: HCloudMachineTemplate
@@ -124,14 +135,3 @@ spec:
       imageName: ubuntu-22.04
       placementGroupName: md-0
       type: cpx31
----
-apiVersion: bootstrap.cluster.x-k8s.io/v1alpha1
-kind: RKE2ConfigTemplate
-metadata:
-  name: hetzner-capi-rke2-demo-agent
-  namespace: default
-spec:
-  template:
-    spec:
-      agentConfig:
-        version: v1.24.6+rke2r1
