@@ -1,0 +1,137 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: default
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: HetznerCluster
+metadata:
+  name: hetzner-capi-rke2-demo
+  namespace: default
+spec:
+  controlPlaneEndpoint:
+    host: ""
+    port: 443
+  controlPlaneLoadBalancer:
+    region: nbg1
+  controlPlaneRegions:
+  - nbg1
+  hcloudNetwork:
+    enabled: false
+  hcloudPlacementGroups:
+  - name: control-plane
+    type: spread
+  - name: md-0
+    type: spread
+  hetznerSecretRef:
+    key:
+      hcloudToken: hcloud
+      hetznerRobotPassword: robot-password
+      hetznerRobotUser: robot-user
+    name: hetzner
+  sshKeys:
+    hcloud:
+    - name: lraus-cka_sshkey
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: hetzner-capi-rke2-demo
+  namespace: default
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+      - 10.45.0.0/16
+    serviceDomain: cluster.local
+    services:
+      cidrBlocks:
+      - 10.46.0.0/16
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
+    kind: RKE2ControlPlane
+    name: hetzner-capi-rke2-demo-control-plane
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: HetznerCluster
+    name: hetzner-capi-rke2-demo
+---
+apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
+kind: RKE2ControlPlane
+metadata:
+  name: hetzner-capi-rke2-demo-control-plane
+  namespace: default
+spec:
+  agentConfig:
+    version: v1.24.6+rke2r1
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: HCloudMachineTemplate
+    name: hetzner-capi-rke2-demo-control-plane
+  nodeDrainTimeout: 2m
+  replicas: 1
+  serverConfig:
+    cni: calico
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineDeployment
+metadata:
+  labels:
+    nodepool: hetzner-capi-rke2-demo-agent
+  name: hetzner-capi-rke2-demo-agent
+  namespace: default
+spec:
+  clusterName: hetzner-capi-rke2-demo
+  replicas: 1
+  selector:
+    matchLabels: null
+  template:
+    spec:
+      bootstrap:
+        configRef:
+          apiVersion: bootstrap.cluster.x-k8s.io/v1alpha1
+          kind: RKE2ConfigTemplate
+          name: hetzner-capi-rke2-demo-agent
+          namespace: default
+      clusterName: hetzner-capi-rke2-demo
+      failureDomain: nbg1
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+        kind: HCloudMachineTemplate
+        name: hetzner-capi-rke2-demo-md-0
+      version: v1.25.2
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: HCloudMachineTemplate
+metadata:
+  name: hetzner-capi-rke2-demo-control-plane
+  namespace: default
+spec:
+  template:
+    spec:
+      imageName: ubuntu-22.04
+      placementGroupName: control-plane
+      type: cpx31
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: HCloudMachineTemplate
+metadata:
+  name: hetzner-capi-rke2-demo-md-0
+  namespace: default
+spec:
+  template:
+    spec:
+      imageName: ubuntu-22.04
+      placementGroupName: md-0
+      type: cpx31
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha1
+kind: RKE2ConfigTemplate
+metadata:
+  name: hetzner-capi-rke2-demo-agent
+  namespace: default
+spec:
+  template:
+    spec:
+      agentConfig:
+        version: v1.24.6+rke2r1
