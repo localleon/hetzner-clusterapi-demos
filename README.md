@@ -124,3 +124,42 @@ export CAPH_WORKER1_CLUSTER_KUBECONFIG=/tmp/workload-kubeconfig
 clusterctl get kubeconfig hetzner-capi-rke2-demo > $CAPH_WORKER1_CLUSTER_KUBECONFIG
 export KUBECONFIG=$CAPH_WORKER1_CLUSTER_KUBECONFIG
 ```
+
+## Setup MicroK8s on Hetzner with CAPI 
+
+First you will need to build an Ubuntu Image with `snapd` installed. Our image will be called `microk8s-ubuntu-22.04-2023-07-21-1830``and can then be referenced in the clusterapi-template.
+
+```
+packer build templates/node-image/microk8s-image/image.json
+```
+
+Export the environment variables and generate you're Cluster Template from the configuration
+
+```bash
+source env-vars/microk8s.rc
+clusterctl generate cluster hetzner-microk8s-demo --from ./capi-conf-templates/microk8s.yaml > hetzner-microk8s-demo.yaml
+```
+
+Export Kubernetes Config 
+
+```
+export CAPH_WORKER2_CLUSTER_KUBECONFIG=/tmp/workload1-kubeconfig
+clusterctl get kubeconfig hetzner-mikrok8s-demo > $CAPH_WORKER2_CLUSTER_KUBECONFIG
+export KUBECONFIG=$CAPH_WORKER2_CLUSTER_KUBECONFIG
+```
+
+
+## Installing Rancher 
+
+```bash 
+# Install Ingress Controller 
+helm upgrade --install ingress-nginx ingress-nginx \
+  --repo https://kubernetes.github.io/ingress-nginx \
+  --namespace ingress-nginx --create-namespace
+
+
+helm repo add rancher-latest https://releases.rancher.com/server-charts/latest
+kubectl create namespace cattle-system
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.yaml
+helm install rancher rancher-latest/rancher --namespace cattle-system --set hostname=rancher.my.org --set bootstrapPassword=Leon123! --version 2.7.5
+```
