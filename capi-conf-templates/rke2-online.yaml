@@ -85,8 +85,12 @@ spec:
   clusterName: ${CLUSTER_NAME}
   replicas: ${CABPR_WK_REPLICAS}
   selector:
-    matchLabels: null
+    matchLabels:
+      nodepool: ${CLUSTER_NAME}-agent
   template:
+    metadata:
+      labels:
+        nodepool: ${CLUSTER_NAME}-agent
     spec:
       version: ${KUBERNETES_VERSION}
       clusterName: ${CLUSTER_NAME}

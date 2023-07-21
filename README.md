@@ -66,6 +66,14 @@ clusterctl get kubeconfig hetzner-capi-demo > $CAPH_WORKER_CLUSTER_KUBECONFIG
 export KUBECONFIG=$CAPH_WORKER_CLUSTER_KUBECONFIG
 ```
 
+Now we need to deploy the CNI 
+
+```bash
+helm repo add cilium https://helm.cilium.io/
+helm upgrade --install cilium cilium/cilium --version 1.12.2 --namespace kube-system -f templates/cilium.yaml
+```
+
+
 ## Setup the Cluster (with RKE2)
 
 We will be using the experimental ClusterAPI Provider [cluster-api-provider-rke2](https://github.com/rancher-sandbox/cluster-api-provider-rke2) from Rancher. 
@@ -95,7 +103,7 @@ clusterctl init --core cluster-api --bootstrap rke2 --control-plane rke2 --infra
 ```
 
 Setup Environment Variables 
-```
+```bash
 export HCLOUD_CONTROL_PLANE_MACHINE_TYPE=cpx31
 export HCLOUD_WORKER_MACHINE_TYPE=cpx31
 export HCLOUD_SSH_KEY="lraus-cka_sshkey"
@@ -104,21 +112,15 @@ export HCLOUD_REGION="nbg1"
 export CABPR_NAMESPACE="default"
 export CLUSTER_NAME=hetzner-capi-rke2-demo
 export CABPR_CP_REPLICAS=1
-export CABPR_WK_REPLICAS=1
+export CABPR_WK_REPLICAS=2
 export KUBERNETES_VERSION=v1.24.6 
 ```
 
 
 ```bash 
 # Generate the cluster
-clusterctl generate cluster hetzner-capi-rke2-demo --from templates/rke2-online-default-sample-capi-template.yaml > hetzner-capi-rke2-demo.yaml
-```
-
-## Installing the CNI (or more)
-
-Now we need to deploy the CNI 
-
-```bash
-helm repo add cilium https://helm.cilium.io/
-helm upgrade --install cilium cilium/cilium --version 1.12.2 --namespace kube-system -f templates/cilium.yaml
+clusterctl generate cluster hetzner-capi-rke2-demo --from capi-conf-templates/rke2-online.yaml > hetzner-capi-rke2-demo.yaml
+export CAPH_WORKER1_CLUSTER_KUBECONFIG=/tmp/workload-kubeconfig
+clusterctl get kubeconfig hetzner-capi-rke2-demo > $CAPH_WORKER1_CLUSTER_KUBECONFIG
+export KUBECONFIG=$CAPH_WORKER1_CLUSTER_KUBECONFIG
 ```
