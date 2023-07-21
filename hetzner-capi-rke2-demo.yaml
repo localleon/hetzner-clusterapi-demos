@@ -82,10 +82,14 @@ metadata:
   namespace: default
 spec:
   clusterName: hetzner-capi-rke2-demo
-  replicas: 0
+  replicas: 2
   selector:
-    matchLabels: null
+    matchLabels:
+      nodepool: hetzner-capi-rke2-demo-agent
   template:
+    metadata:
+      labels:
+        nodepool: hetzner-capi-rke2-demo-agent
     spec:
       bootstrap:
         configRef:
