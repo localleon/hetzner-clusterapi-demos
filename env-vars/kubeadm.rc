@@ -1,0 +1,8 @@
+export HCLOUD_CONTROL_PLANE_MACHINE_TYPE=cpx31
+export HCLOUD_WORKER_MACHINE_TYPE=cpx31
+export HCLOUD_SSH_KEY="lraus-cka_sshkey"
+export HCLOUD_REGION="nbg1"
+
+export CABPR_NAMESPACE="default"
+export CLUSTER_NAME=hetzner-capi-demo
+export KUBERNETES_VERSION=v1.27.3 

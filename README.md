@@ -24,7 +24,7 @@ export KUBECONFIG=$CAPH_MGT_CLUSTER_KUBECONFIG
 
 
 Setup Environment Variables 
-```
+```bash
 export HCLOUD_CONTROL_PLANE_MACHINE_TYPE=cpx31
 export HCLOUD_WORKER_MACHINE_TYPE=cpx31
 export HCLOUD_SSH_KEY="lraus-cka_sshkey"
@@ -53,11 +53,16 @@ Installing Provider="control-plane-kubeadm" Version="v1.4.4" TargetNamespace="ca
 Installing Provider="infrastructure-hetzner" Version="v1.0.0-beta.18" TargetNamespace="caph-system"
 ```
 
+Export the configuration variables for the cluster 
 
-Then generate the cluster
+```bash 
+source ./env-vars/kubeadm.rc
+```
+
+Then generate the cluster with `clusterctl`
 
 ```bash
-clusterctl generate cluster hetzner-capi-demo --kubernetes-version v1.25.2 --control-plane-machine-count=1 --worker-machine-count=2 > my-cluster.yaml
+clusterctl generate cluster hetzner-capi-demo --control-plane-machine-count=1 --worker-machine-count=2 > hetzner-capi-kubeadm-demo.yaml
 k apply -f kubeadm-cluster.yaml
 k get clusters
 
@@ -104,26 +109,32 @@ clusterctl init --core cluster-api --bootstrap rke2 --control-plane rke2 --infra
 
 Setup Environment Variables 
 ```bash
-export HCLOUD_CONTROL_PLANE_MACHINE_TYPE=cpx31
-export HCLOUD_WORKER_MACHINE_TYPE=cpx31
-export HCLOUD_SSH_KEY="lraus-cka_sshkey"
-export HCLOUD_REGION="nbg1"
-
-export CABPR_NAMESPACE="default"
-export CLUSTER_NAME=hetzner-capi-rke2-demo
-export CABPR_CP_REPLICAS=1
-export CABPR_WK_REPLICAS=2
-export KUBERNETES_VERSION=v1.24.6 
+source ./env-vars/rke2.rc
 ```
-
 
 ```bash 
 # Generate the cluster
 clusterctl generate cluster hetzner-capi-rke2-demo --from capi-conf-templates/rke2-online.yaml > hetzner-capi-rke2-demo.yaml
-export CAPH_WORKER1_CLUSTER_KUBECONFIG=/tmp/workload-kubeconfig
-clusterctl get kubeconfig hetzner-capi-rke2-demo > $CAPH_WORKER1_CLUSTER_KUBECONFIG
-export KUBECONFIG=$CAPH_WORKER1_CLUSTER_KUBECONFIG
+k apply -f hetzner-capi-rke2-demo.yaml
 ```
+
+The cluster will now be provisoned. After this, you can access the Kubeconfig of our new Workload Cluster via `clusterctl`
+
+```bash
+clusterctl get kubeconfig hetzner-capi-rke2-demo > /tmp/workload-kubeconfig
+export KUBECONFIG=/tmp/workload-kubeconfig
+```
+
+For the nodes to get into a "Ready"-State, we will need to install the "Hetzner-Cloud-Controller". See [HetznerCloud Cloud Controller Manager](https://github.com/hetznercloud/hcloud-cloud-controller-manager) for more information. 
+
+```
+kubectl -n kube-system create secret generic hcloud --from-literal="token=$HCLOUD_TOKEN"
+helm repo add hcloud https://charts.hetzner.cloud
+helm repo update hcloud
+helm install hccm hcloud/hcloud-cloud-controller-manager -n kube-system
+```
+
+
 
 ## Setup MicroK8s on Hetzner with CAPI 
 
