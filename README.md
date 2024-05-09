@@ -7,7 +7,7 @@ Sample-Setup for using the RKE2-ClusterAPI Provider on Hetzner Cloud
 Install the `clusterctl` cli. See [Install ClusterCTL](https://cluster-api.sigs.k8s.io/user/quick-start.html#install-clusterctl)
 
 ```bash 
-curl -L https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.4.4/clusterctl-linux-amd64 -o clusterctl
+curl -L https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.7.1/clusterctl-linux-amd64 -o clusterctl 
 sudo install -o root -g root -m 0755 clusterctl /usr/local/bin/clusterctl
 clusterctl version
 ```
@@ -15,7 +15,7 @@ clusterctl version
 We will use a Kind-Cluster as Managment Cluster 
 ```bash 
 # Create Kind-Cluster for local managment
-sudo kind create cluster --image kindest/node:v1.27.3
+sudo kind create cluster --image kindest/node:v1.29.2
 
 export CAPH_MGT_CLUSTER_KUBECONFIG=/tmp/mgt-kubeconfig
 kind get kubeconfig > $CAPH_MGT_CLUSTER_KUBECONFIG
@@ -81,34 +81,18 @@ helm upgrade --install cilium cilium/cilium --version 1.12.2 --namespace kube-sy
 
 ## Setup the Cluster (with RKE2)
 
-We will be using the experimental ClusterAPI Provider [cluster-api-provider-rke2](https://github.com/rancher-sandbox/cluster-api-provider-rke2) from Rancher. 
-
-Create the following file with `vi ~/.cluster-api/clusterctl.yaml`
-
-```yaml 
-providers:
-  - name: "rke2"
-    url: "https://github.com/rancher-sandbox/cluster-api-provider-rke2/releases/v0.1.0-alpha.1/bootstrap-components.yaml"
-    type: "BootstrapProvider"
-  - name: "rke2"
-    url: "https://github.com/rancher-sandbox/cluster-api-provider-rke2/releases/v0.1.0-alpha.1/control-plane-components.yaml"
-    type: "ControlPlaneProvider"
-  - name: "docker"
-    url: "https://github.com/belgaied2/cluster-api/releases/v1.3.3-cabpr-fix/infrastructure-components.yaml"
-    type: "InfrastructureProvider"
-```
-
-Now we switch our Bootstrap Provider to RKE2 and Control-Plane to RKE2. We still use the SysElf Provider for the infrastructure provisoning. Make sure this is run on the CAPI-Managment-Cluster.
+We will be using the experimental ClusterAPI Provider [cluster-api-provider-rke2](https://github.com/rancher-sandbox/cluster-api-provider-rke2) from Rancher. We switch our Bootstrap Provider to RKE2 and Control-Plane to RKE2. We still use the SysElf Provider for the infrastructure provisoning. Make sure this is run on the CAPI-Managment-Cluster.
 
 ```bash
 # We need to remove the kubeadm provider befor installing rke2. 
 clusterctl delete  --bootstrap kubeadm --control-plane kubeadm
 # Setup syself/hetzner clusterAPI Provider 
-clusterctl init --core cluster-api --bootstrap rke2 --control-plane rke2 --infrastructure hetzner
+clusterctl init --bootstrap rke2 --control-plane rke2 --infrastructure hetzner
 ```
 
-Setup Environment Variables 
+Setup Environment Variables and create Hetzner API-Key as secret `$HCLOUD_TOKEN` should already be exposed! 
 ```bash
+kubectl create secret generic hcloud --from-literal="token=$HCLOUD_TOKEN"
 source ./env-vars/rke2.rc
 ```
 
@@ -133,8 +117,6 @@ helm repo add hcloud https://charts.hetzner.cloud
 helm repo update hcloud
 helm install hccm hcloud/hcloud-cloud-controller-manager -n kube-system
 ```
-
-
 
 ## Setup MicroK8s on Hetzner with CAPI 
 
