@@ -15,14 +15,14 @@ spec:
   controlPlaneLoadBalancer:
     region: nbg1
   controlPlaneRegions:
-    - nbg1
+  - nbg1
   hcloudNetwork:
     enabled: false
   hcloudPlacementGroups:
-    - name: control-plane
-      type: spread
-    - name: md-0
-      type: spread
+  - name: control-plane
+    type: spread
+  - name: md-0
+    type: spread
   hetznerSecretRef:
     key:
       hcloudToken: hcloud
@@ -31,7 +31,7 @@ spec:
     name: hetzner
   sshKeys:
     hcloud:
-      - name: lraus-cka_sshkey
+    - name: lraus-cka_sshkey
 ---
 apiVersion: cluster.x-k8s.io/v1beta1
 kind: Cluster
@@ -42,11 +42,11 @@ spec:
   clusterNetwork:
     pods:
       cidrBlocks:
-        - 10.45.0.0/16
+      - 10.45.0.0/16
     serviceDomain: cluster.local
     services:
       cidrBlocks:
-        - 10.46.0.0/16
+      - 10.46.0.0/16
   controlPlaneRef:
     apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
     kind: RKE2ControlPlane
@@ -63,7 +63,7 @@ metadata:
   namespace: default
 spec:
   agentConfig:
-    version: v1.29.2+rke2r1
+    version: v1.29.5+rke2r1
   infrastructureRef:
     apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
     kind: HCloudMachineTemplate
@@ -82,7 +82,7 @@ metadata:
   namespace: default
 spec:
   clusterName: hetzner-capi-rke2-demo
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
       nodepool: hetzner-capi-rke2-demo-agent
@@ -103,7 +103,7 @@ spec:
         apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
         kind: HCloudMachineTemplate
         name: hetzner-capi-rke2-demo-md-0
-      version: v1.29.2
+      version: v1.29.5
 ---
 apiVersion: bootstrap.cluster.x-k8s.io/v1alpha1
 kind: RKE2ConfigTemplate
@@ -114,7 +114,7 @@ spec:
   template:
     spec:
       agentConfig:
-        version: v1.29.2+rke2r1
+        version: v1.29.5+rke2r1
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: HCloudMachineTemplate

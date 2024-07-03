@@ -75,7 +75,7 @@ Now we need to deploy the CNI
 
 ```bash
 helm repo add cilium https://helm.cilium.io/
-helm upgrade --install cilium cilium/cilium --version 1.12.2 --namespace kube-system -f templates/cilium.yaml
+helm upgrade --install cilium cilium/cilium --namespace kube-system -f templates/cilium.yaml
 ```
 
 
@@ -153,6 +153,6 @@ helm upgrade --install ingress-nginx ingress-nginx \
 
 helm repo add rancher-latest https://releases.rancher.com/server-charts/latest
 kubectl create namespace cattle-system
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.yaml
-helm install rancher rancher-latest/rancher --namespace cattle-system --set hostname=rancher.my.org --set bootstrapPassword=Leon123! --version 2.7.5
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.0/cert-manager.yaml
+helm install rancher rancher-latest/rancher --namespace cattle-system --set hostname=rancher.my.org --set bootstrapPassword=Leon123!
 ```

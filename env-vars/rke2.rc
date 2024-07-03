@@ -7,4 +7,4 @@ export CABPR_NAMESPACE="default"
 export CLUSTER_NAME=hetzner-capi-rke2-demo
 export CABPR_CP_REPLICAS=1
 export CABPR_WK_REPLICAS=2
-export KUBERNETES_VERSION=v1.29.2 
+export KUBERNETES_VERSION=v1.29.5 
