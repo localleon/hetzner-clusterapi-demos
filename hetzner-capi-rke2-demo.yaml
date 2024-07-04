@@ -56,22 +56,31 @@ spec:
     kind: HetznerCluster
     name: hetzner-capi-rke2-demo
 ---
-apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
+apiVersion: controlplane.cluster.x-k8s.io/v1beta1
 kind: RKE2ControlPlane
 metadata:
   name: hetzner-capi-rke2-demo-control-plane
   namespace: default
 spec:
   agentConfig:
-    version: v1.29.5+rke2r1
+    kubelet:
+      extraArgs:
+      - --cloud-provider=external
   infrastructureRef:
     apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
     kind: HCloudMachineTemplate
     name: hetzner-capi-rke2-demo-control-plane
   nodeDrainTimeout: 2m
+  preRKE2Commands:
+  - sleep 30
+  registrationMethod: internal-first
   replicas: 1
+  rolloutStrategy:
+    rollingUpdate:
+      maxSurge: 1
   serverConfig:
-    cni: calico
+    cni: cilium
+  version: v1.29.5+rke2r1
 ---
 apiVersion: cluster.x-k8s.io/v1beta1
 kind: MachineDeployment
@@ -103,9 +112,9 @@ spec:
         apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
         kind: HCloudMachineTemplate
         name: hetzner-capi-rke2-demo-md-0
-      version: v1.29.5
+      version: v1.29.5+rke2r1
 ---
-apiVersion: bootstrap.cluster.x-k8s.io/v1alpha1
+apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
 kind: RKE2ConfigTemplate
 metadata:
   name: hetzner-capi-rke2-demo-agent
@@ -114,7 +123,11 @@ spec:
   template:
     spec:
       agentConfig:
-        version: v1.29.5+rke2r1
+        kubelet:
+          extraArgs:
+          - --cloud-provider=external
+      preRKE2Commands:
+      - sleep 30
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: HCloudMachineTemplate

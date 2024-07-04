@@ -57,21 +57,23 @@ spec:
     kind: HetznerCluster
     name: ${CLUSTER_NAME}
 ---
-apiVersion: controlplane.cluster.x-k8s.io/v1beta1 
+apiVersion: controlplane.cluster.x-k8s.io/v1beta1
 kind: RKE2ControlPlane
 metadata:
   name: ${CLUSTER_NAME}-control-plane
   namespace: ${CABPR_NAMESPACE}
-spec: 
+spec:
   replicas: ${CABPR_CP_REPLICAS}
-  infrastructureRef:
-    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
-    kind: VSphereMachineTemplate
-    name: vsphere-controlplane
   nodeDrainTimeout: 2m
   preRKE2Commands:
     - sleep 30 #fix to give OS time to become ready
   version: ${RKE2_VERSION}
+  registrationMethod: internal-first
+  rolloutStrategy:
+    rollingUpdate:
+      maxSurge: 1
+  serverConfig:
+    cni: cilium
   agentConfig:
     kubelet:
       extraArgs:
@@ -99,7 +101,7 @@ spec:
       labels:
         nodepool: ${CLUSTER_NAME}-agent
     spec:
-      version: ${KUBERNETES_VERSION}
+      version: ${RKE2_VERSION}
       clusterName: ${CLUSTER_NAME}
       bootstrap:
         configRef:
@@ -118,7 +120,7 @@ kind: RKE2ConfigTemplate
 metadata:
   namespace: ${CABPR_NAMESPACE}
   name: ${CLUSTER_NAME}-agent
-spec: 
+spec:
   template:
     spec:
       preRKE2Commands:
